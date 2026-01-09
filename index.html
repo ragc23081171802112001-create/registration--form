@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration Form</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background-image: url("bg1.jpg"); 
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      padding: 20px;
+    }
+
+    .form-container {
+      background: rgba(255,255,255,0.9);
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 8px;
+      display: block;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 6px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+
+    .gender input {
+      width: auto;
+    }
+
+    button {
+      width: 48%;
+      padding: 8px;
+      margin-top: 15px;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    .register {
+      background: green;
+    }
+
+    .clear {
+      background: gray;
+      float: right;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .edit {
+      background: orange;
+      color: white;
+      border: none;
+      padding: 5px;
+    }
+
+    .delete {
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="form-container">
+  <h2>Registration Form</h2>
+
+  <form id="regForm">
+    <input type="hidden" id="editIndex">
+
+    <label>Name</label>
+    <input type="text" id="name" required>
+
+    <label>Email</label>
+    <input type="email" id="email" required>
+
+    <label>Phone</label>
+    <input type="tel" id="phone" required>
+
+    <label>Password</label>
+    <input type="password" id="password" required>
+
+    <label>Gender</label>
+    <div class="gender">
+      <input type="radio" name="gender" value="Male"> Male
+      <input type="radio" name="gender" value="Female"> Female
+      <input type="radio" name="gender" value="Other"> Other
+    </div>
+
+    <label>DOB</label>
+    <input type="date" id="dob" required>
+
+    <label>Address</label>
+    <textarea id="address"></textarea>
+
+    <label>Course</label>
+    <select id="course">
+      <option value="">Select</option>
+      <option>BSc</option>
+      <option>BCA</option>
+      <option>BCom</option>
+    </select>
+
+    <button type="submit" class="register">Register</button>
+    <button type="button" class="clear" onclick="clearForm()">Clear</button>
+  </form>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Gender</th>
+      <th>DOB</th>
+      <th>Course</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+/* ELEMENT REFERENCES */
+const regForm = document.getElementById("regForm");
+const nameInput = document.getElementById("name");
+const emailInput = document.getElementById("email");
+const phoneInput = document.getElementById("phone");
+const passwordInput = document.getElementById("password");
+const dobInput = document.getElementById("dob");
+const courseInput = document.getElementById("course");
+const tableBody = document.getElementById("tableBody");
+const editIndexInput = document.getElementById("editIndex");
+
+let users = [];
+
+/* LOAD EVENT */
+window.addEventListener("load", function () {
+  alert("Page Loaded Successfully");
+});
+
+/* BLUR EVENT */
+emailInput.addEventListener("blur", function () {
+  if (!emailInput.value.endsWith("@gmail.com")) {
+    alert("Enter valid Gmail ID");
+  }
+});
+
+/* KEYDOWN EVENT */
+phoneInput.addEventListener("keydown", function (e) {
+  if (!/[0-9]/.test(e.key) && e.key !== "Backspace") {
+    e.preventDefault();
+  }
+});
+
+/* KEYUP EVENT */
+passwordInput.addEventListener("keyup", function () {
+  if (passwordInput.value.length === 6) {
+    passwordInput.style.border = "2px solid green";
+  } else {
+    passwordInput.style.border = "1px solid #ccc";
+  }
+});
+
+/* SUBMIT EVENT */
+regForm.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const genderInput = document.querySelector('input[name="gender"]:checked');
+  if (!genderInput) {
+    alert("Select Gender");
+    return;
+  }
+
+  if (passwordInput.value.length !== 6) {
+    alert("Password must be exactly 6 characters");
+    return;
+  }
+
+  const user = {
+    name: nameInput.value,
+    email: emailInput.value,
+    phone: phoneInput.value,
+    gender: genderInput.value,
+    dob: dobInput.value,
+    course: courseInput.value
+  };
+
+  if (editIndexInput.value === "") {
+    users.push(user);
+    alert("Registered Successfully");
+  } else {
+    users[editIndexInput.value] = user;
+    editIndexInput.value = "";
+    alert("Updated Successfully");
+  }
+
+  displayUsers();
+  clearForm();
+});
+
+/* DISPLAY */
+function displayUsers() {
+  tableBody.innerHTML = "";
+  users.forEach((u, i) => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.phone}</td>
+        <td>${u.gender}</td>
+        <td>${u.dob}</td>
+        <td>${u.course}</td>
+        <td>
+          <button class="edit" onclick="editUser(${i})">Edit</button>
+          <button class="delete" onclick="deleteUser(${i})">Delete</button>
+        </td>
+      </tr>`;
+  });
+}
+
+/* EDIT */
+function editUser(i) {
+  const u = users[i];
+  nameInput.value = u.name;
+  emailInput.value = u.email;
+  phoneInput.value = u.phone;
+  dobInput.value = u.dob;
+  courseInput.value = u.course;
+  editIndexInput.value = i;
+
+  document.querySelectorAll('input[name="gender"]').forEach(r => {
+    r.checked = r.value === u.gender;
+  });
+}
+
+/* DELETE */
+function deleteUser(i) {
+  if (confirm("Delete this record?")) {
+    users.splice(i, 1);
+    displayUsers();
+    alert("Deleted Successfully");
+  }
+}
+
+/* CLEAR */
+function clearForm() {
+  regForm.reset();
+  editIndexInput.value = "";
+  passwordInput.style.border = "1px solid #ccc";
+}
+</script>
+
+</body>
+</html>
